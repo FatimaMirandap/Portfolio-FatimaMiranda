@@ -20,12 +20,12 @@ Análisis geoespacial · Machine Learning · NLP para lenguas de bajos recursos
 
 Este sitio reúne mi trabajo en ingeniería de datos, ciencia de datos y análisis geoespacial: investigación publicada, proyectos aplicados en la industria y desarrollos propios, presentados con la misma evidencia con la que los sustentaría en una entrevista.
 
-No es una plantilla genérica de portafolio. Cada demo del laboratorio interactivo está construida a partir de datos y resultados reales de mis proyectos — no hay marcadores de posición ni cifras inventadas.
+Cada demo del laboratorio interactivo está construida a partir de datos y resultados reales de mis proyectos.
 
 ## Qué vas a encontrar aquí
 
 - **Stack por especialidad** — las herramientas que uso, organizadas por rol: Data Analytics, Data Engineering, Data Science y Cómputo en la Nube.
-- **Experiencia documentada** — desde mi investigación de posgrado en CentroGeo hasta proyectos de industria (PLENUMSOFT, EMBSOFT) y desarrollos personales como [Peekeños](https://peekenos.web.app/), una plataforma para reportar mascotas extraviadas con IA.
+- **Experiencia documentada** — desde mi investigación de posgrado en CentroGeo hasta proyectos de industria y desarrollos personales como [Peekeños](https://peekenos.web.app/), una plataforma para reportar mascotas extraviadas con IA.
 - **Laboratorio interactivo** — un dashboard, un mapa geoespacial y un pipeline de datos que puedes explorar tú mismo, construidos con métricas y flujos reales de mis proyectos.
 - **Publicación científica** — coautora de *"Detecting Indigenous Languages: A System for Maya Text Profiling and Machine Learning Classification Techniques"*, publicado en el *International Journal of Computer and Information Engineering* (2025).
 - **CV integrado** — visor del currículum completo, en español e inglés, sin salir del sitio.
@@ -38,10 +38,10 @@ React · Vite · Tailwind CSS · Framer Motion · Recharts · Leaflet · Google 
 ## Contacto
 
 **Fátima Miranda Pestaña**
-📍 Mérida, Yucatán, México
-📧 [fatima.miranda.pestana@gmail.com](mailto:fatima.miranda.pestana@gmail.com)
-💼 [linkedin.com/in/fatimamirandaa](https://www.linkedin.com/in/fatimamirandaa/)
-💻 [github.com/FatimaMirandap](https://github.com/FatimaMirandap)
+ Mérida, Yucatán, México
+ [fatima.miranda.pestana@gmail.com](mailto:fatima.miranda.pestana@gmail.com)
+ [linkedin.com/in/fatimamirandaa](https://www.linkedin.com/in/fatimamirandaa/)
+ [github.com/FatimaMirandap](https://github.com/FatimaMirandap)
 
 ---
 
