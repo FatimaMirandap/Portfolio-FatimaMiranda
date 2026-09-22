@@ -1,3 +1,4 @@
+
 # Portafolio — Fátima Miranda
 
 React + Vite + Tailwind CSS, modo oscuro con paleta Violet/Fuchsia, listo para
@@ -11,7 +12,6 @@ npm install
 npm run dev
 ```
 
-Abre `http://localhost:5173`.
 
 ## 2. Qué se agregó en esta iteración
 
