@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: rgba(232, 121, 249, 0.35);
+  color: #fdf4ff;
+}
+
+/* Foco visible accesible en todos los elementos interactivos */
+:focus-visible {
+  outline: 2px solid #e879f9;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Scrollbar en tono violeta oscuro, a juego con la paleta */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #07050f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2e1f4d;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #452e73;
+}
+
+/* --- Motivo hexagonal (firma visual: indexación espacial H3) --- */
+.clip-hex {
+  clip-path: polygon(25% 3%, 75% 3%, 98% 50%, 75% 97%, 25% 97%, 2% 50%);
+}
+
+/* --- Orbes de luz ambiental: flotación lenta y suave --- */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(24px, -28px) scale(1.06);
+  }
+}
+@keyframes float-slower {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-22px, 26px) scale(1.04);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 14s ease-in-out infinite;
+}
+.animate-float-slower {
+  animation: float-slower 19s ease-in-out infinite;
+}
+
+/* --- Punto de flujo de datos: usado en el diagrama de pipeline --- */
+@keyframes flow-move {
+  0% {
+    left: -3px;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 3px);
+    opacity: 0;
+  }
+}
+.flow-dot {
+  animation: flow-move 2.6s linear infinite;
+}
+/* --- Botones llamativos: barrido de brillo diagonal al hover --- */
+.shine-on-hover {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.shine-on-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.65s ease;
+  pointer-events: none;
+}
+.shine-on-hover:hover::before {
+  left: 130%;
+}
+
+/* --- Botones llamativos: halo pulsante suave (CTA principal) --- */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 121, 249, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(232, 121, 249, 0);
+  }
+}
+.btn-glow-pulse {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
+
+
+/* --- Overrides de Leaflet para integrarlo al tema oscuro --- */
+.leaflet-container {
+  background: #0b0816;
+  font-family: 'Inter', sans-serif;
+}
+.leaflet-control-zoom a {
+  background-color: #150f28 !important;
+  color: #e9d5ff !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+.leaflet-control-zoom a:hover {
+  background-color: #241a3d !important;
+  color: #f5d0fe !important;
+}
+.leaflet-control-attribution {
+  background: rgba(7, 5, 15, 0.75) !important;
+  color: #a78bfa !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: #e879f9 !important;
+}
+.leaflet-popup-content-wrapper {
+  background: #150f28 !important;
+  color: #f3e8ff !important;
+  border: 1px solid rgba(232, 121, 249, 0.25);
+  border-radius: 0.75rem !important;
+}
+.leaflet-popup-tip {
+  background: #150f28 !important;
+}
+
+/* --- Accesibilidad: respeta "reducir movimiento" del sistema --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
