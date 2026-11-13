@@ -1,0 +1,39 @@
+{
+  "fecha_de_corte": "2026-11-12",
+  "periodo": "2020-2026",
+  "fuentes": {
+    "Nature": "S137773608",
+    "Science": "S3880285",
+    "Scientific Data": "S2607323502",
+    "arXiv": "S4306400194"
+  },
+  "criterio_ml": "(\"machine learning\" OR \"deep learning\" OR \"data science\" OR \"artificial neural network\" OR \"convolutional neural network\" OR \"large language model\" OR \"foundation model\" OR \"random forest\" OR \"gradient boosting\" OR \"supervised learning\")",
+  "tipos_de_obra": "article|preprint",
+  "catalogo": "OpenAlex",
+  "resumen_fuentes": [
+    {
+      "fuente": "Nature",
+      "obras": 21980,
+      "con_ML": 463,
+      "porcentaje": 2.1
+    },
+    {
+      "fuente": "Science",
+      "obras": 13027,
+      "con_ML": 178,
+      "porcentaje": 1.4
+    },
+    {
+      "fuente": "Scientific Data",
+      "obras": 19,
+      "con_ML": 1,
+      "porcentaje": 5.3
+    },
+    {
+      "fuente": "arXiv",
+      "obras": 1399202,
+      "con_ML": 171928,
+      "porcentaje": 12.3
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de los proyectos de investigación con ML y Data Science</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--violet:#7C68D8;--navy:#151B3D;--light:#F3F0FA;--cyan:#5CC8E8;--bg:#F3F0FA;--panel:#FFFFFF;--text:#151B3D;--muted:#5b6080;--line:#d9d3ee}
+@media (prefers-color-scheme:dark){:root{--bg:#151B3D;--panel:#1d2450;--text:#F3F0FA;--muted:#b7b9d6;--line:#343c72}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:1.05rem;margin:0}
+.lang button,.btns button,.ctl button{border:1px solid var(--violet);background:transparent;color:var(--text);padding:4px 10px;border-radius:999px;cursor:pointer;font-size:.8rem}
+.lang button[aria-pressed="true"],.btns button[aria-pressed="true"],.ctl button[aria-pressed="true"]{background:var(--violet);color:#fff}
+main{flex:1;min-height:0;display:flex}
+aside{width:310px;max-width:44vw;overflow:auto;padding:14px;background:var(--panel);border-right:1px solid var(--line);font-size:.86rem}
+aside h2{font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 6px}
+aside h2:first-child{margin-top:0}
+label.chk{display:flex;align-items:center;gap:8px;margin:3px 0;cursor:pointer}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none}
+select,input[type=range],input[type=search]{width:100%}
+select,input[type=search]{padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.stat{background:var(--bg);border-radius:10px;padding:8px}
+.stat b{display:block;font-size:1.1rem;color:var(--violet)}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:8px 0 6px}
+.bar span{display:block;height:100%}
+.leg{list-style:none;margin:0;padding:0;font-size:.8rem}
+.leg li{display:grid;grid-template-columns:12px 1fr auto auto;gap:6px;align-items:center;padding:1px 0}
+.leg .n{color:var(--muted);font-variant-numeric:tabular-nums}.leg .p{font-weight:600;min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+.sub{font-size:.78rem;color:var(--muted);margin:10px 0 0}
+details{margin-top:14px;font-size:.8rem;color:var(--muted)}
+details summary{cursor:pointer;color:var(--text);font-weight:600}
+.center{flex:1;min-width:0;display:flex;flex-direction:column}
+.mapwrap{position:relative;flex:1;min-height:0}
+#map{position:absolute;inset:0}
+.panel{position:absolute;top:10px;right:10px;z-index:900;width:320px;max-width:calc(100% - 20px);max-height:calc(100% - 20px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.82rem;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.panel.closed{display:none}
+.panel h3{margin:0 0 6px;font-size:.9rem}
+.ptoggle{position:absolute;top:10px;right:10px;z-index:901;display:none}
+.panel.closed ~ .ptoggle{display:block}
+.pclose{position:absolute;top:6px;right:8px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem}
+.toprow{display:grid;grid-template-columns:20px 1fr auto;gap:6px;align-items:center;margin:2px 0;position:relative;cursor:pointer;padding:2px 4px;border-radius:6px}
+.toprow:hover,.toprow.sel{background:var(--bg)}
+.toprow .fill{position:absolute;left:0;top:0;bottom:0;background:var(--violet);opacity:.14;border-radius:6px}
+.toprow>*{position:relative}
+.toprow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toprow .v{font-variant-numeric:tabular-nums;color:var(--muted)}
+.card{border:1px solid var(--line);border-radius:10px;padding:8px;margin:8px 0;background:var(--bg)}
+.card h4{margin:0 0 2px;font-size:.88rem}
+.card .meta{color:var(--muted);font-size:.78rem}
+.big{display:flex;gap:14px;margin:6px 0}.big div b{display:block;font-size:1.05rem;color:var(--violet)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--violet);color:#fff;border-radius:999px;padding:2px 4px 2px 10px;font-size:.78rem}
+.chip button{border:0;background:rgba(255,255,255,.25);color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;line-height:1}
+#inst-res{position:relative}
+#inst-res ul{position:absolute;left:0;right:0;top:2px;z-index:50;list-style:none;margin:0;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;max-height:220px;overflow:auto;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+#inst-res li{padding:5px 8px;border-radius:6px;cursor:pointer;font-size:.82rem}
+#inst-res li:hover,#inst-res li.act{background:var(--bg)}
+#inst-res small{color:var(--muted)}
+footer{padding:8px 16px;font-size:.74rem;line-height:1.45;color:var(--muted);border-top:1px solid var(--line);background:var(--panel)}
+footer b{color:var(--text)}
+#msg{position:absolute;left:16px;bottom:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);padding:10px 12px;border-radius:10px;max-width:340px;font-size:.85rem;display:none}
+.leaflet-popup-content{font-family:inherit;font-size:.85rem}
+.leaflet-popup-content b{display:block;margin-bottom:2px}
+.leaflet-popup-content button{margin-top:6px;border:1px solid var(--violet);background:var(--violet);color:#fff;border-radius:8px;padding:3px 8px;cursor:pointer}
+@media (max-width:760px){main{flex-direction:column}aside{width:100%;max-width:none;max-height:42vh;border-right:0;border-bottom:1px solid var(--line)}.panel{width:calc(100% - 20px)}}
+</style>
+</head>
+<body>
+<header>
+  <h1 data-i18n="title">Mapa de los proyectos de investigación con ML y Data Science</h1>
+  <div class="lang" role="group" aria-label="Idioma">
+    <button id="l-es" aria-pressed="true">ES</button><button id="l-en" aria-pressed="false">EN</button>
+  </div>
+</header>
+<main>
+  <aside>
+    <h2 data-i18n="f_view">Vista del mapa</h2>
+    <div class="btns" id="modes" role="group">
+      <button data-mode="circles" data-i18n="v_circles" aria-pressed="true">Círculos</button>
+      <button data-mode="heat" data-i18n="v_heat" aria-pressed="false">Hotspots</button>
+      <button data-mode="both" data-i18n="v_both" aria-pressed="false">Ambos</button>
+    </div>
+    <div id="heat-ctl" style="margin-top:8px;display:none"><span class="sub" style="margin:0" data-i18n="heat_r">Radio del hotspot</span><input id="heat-r" type="range" min="10" max="60" value="25"></div>
+    <h2 data-i18n="f_source">Fuente</h2><div id="f-source"></div>
+    <h2 data-i18n="f_field">Línea de investigación</h2>
+    <select id="f-field"></select>
+    <h2 data-i18n="f_type">Sector de la institución</h2><div id="f-type"></div>
+    <h2 data-i18n="f_min">Mínimo de obras por institución</h2>
+    <input id="f-min" type="range" min="1" max="200" value="1"><div id="f-min-v" style="color:var(--muted)">1</div>
+    <h2 data-i18n="f_go">Ir a</h2>
+    <div class="btns" id="gos"><button data-go="world" data-i18n="go_world">Mundo</button><button data-go="mx" data-i18n="go_mx">México</button><button data-go="mid" data-i18n="go_mid">Mérida</button></div>
+    <h2 data-i18n="f_sum">Resumen</h2>
+    <div class="stats">
+      <div class="stat"><b id="s-inst">0</b><span data-i18n="s_inst">instituciones</span></div>
+      <div class="stat"><b id="s-works">0</b><span data-i18n="s_works">participaciones</span></div>
+      <div class="stat"><b id="s-country">0</b><span data-i18n="s_country">países</span></div>
+      <div class="stat"><b id="s-top">–</b><span data-i18n="s_top">país con más</span></div>
+    </div>
+    <p class="sub" data-i18n="b_sector">Por sector</p>
+    <div class="bar" id="bar-sector" aria-hidden="true"></div><ul class="leg" id="leg-sector"></ul>
+    <p class="sub" data-i18n="b_field">Por línea de investigación</p>
+    <div class="bar" id="bar-field" aria-hidden="true"></div><ul class="leg" id="leg-field"></ul>
+    <h2 data-i18n="f_inst">Institución</h2>
+    <div id="inst-res"><input id="inst-q" type="search" autocomplete="off" data-i18n-ph="inst_ph" placeholder="Buscar institución…"><ul id="inst-list" hidden></ul></div>
+    <p class="sub" data-i18n="inst_or">o elige de la lista</p>
+    <select id="inst-sel" aria-label="Institución"></select>
+    <div class="chips" id="chips"></div>
+    <details><summary data-i18n="m_title">Cómo leer este mapa y sus límites</summary>
+      <p data-i18n="m_body"></p><p id="meta-line"></p>
+    </details>
+  </aside>
+  <div class="center">
+    <div class="mapwrap">
+      <div id="map"></div>
+      <section class="panel" id="panel" aria-label="Contribuciones por institución">
+        <button class="pclose" id="pclose" aria-label="Cerrar">×</button>
+        <h3 data-i18n="p_title">Contribuciones por institución</h3>
+        <div id="p-sel"></div>
+        <div class="sub" style="margin:6px 0 4px" data-i18n="p_top">Top 10 instituciones</div>
+        <div id="p-top"></div>
+      </section>
+      <button class="ptoggle ctl" id="ptoggle" data-i18n="p_open">Instituciones</button>
+      <div id="msg"></div>
+    </div>
+  </div>
+</main>
+<footer id="footer"></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+const I18N={
+ es:{title:"Mapa de los proyectos de investigación con ML y Data Science",f_inst:"Institución",inst_ph:"Buscar institución…",inst_or:"o elige de la lista",inst_pick:"Seleccionar institución…",inst_none:"Sin coincidencias",clear:"Limpiar selección",
+  f_view:"Vista del mapa",v_circles:"Círculos",v_heat:"Hotspots",v_both:"Ambos",heat_r:"Radio del hotspot",
+  f_source:"Fuente",f_field:"Línea de investigación",f_type:"Sector de la institución",f_min:"Mínimo de obras por institución",f_go:"Ir a",go_world:"Mundo",go_mx:"México",go_mid:"Mérida",
+  f_sum:"Resumen",s_inst:"instituciones",s_works:"participaciones",s_country:"países",s_top:"país con más",all:"Todas las líneas",
+  b_sector:"Por sector",b_field:"Por línea de investigación",others:"Otras",
+  p_title:"Contribuciones por institución",p_top:"Top 10 instituciones",p_open:"Instituciones",p_rank:"Lugar",p_share:"del total",p_peak:"Año con más obras",
+  d_fields:"Por línea",d_sources:"Por fuente",d_years:"Por año",add_filter:"Filtrar por esta institución",
+  y_title:"Año",y_all:"Todos",y_play:"▶ Reproducir",y_pause:"⏸ Pausar",y_cum:"Acumulado",
+  m_title:"Cómo leer este mapa y sus límites",
+  m_body:"Cada círculo es una institución; su tamaño es el número de publicaciones con ciencia de datos o machine learning en el título o el resumen, en las fuentes elegidas. Una obra con autores de varias instituciones cuenta en cada una (por eso se habla de participaciones). Mide publicaciones, no proyectos, y la detección de ML por palabras clave puede fallar. El tipo de institución y su ubicación vienen de OpenAlex. Hotspots muestra la concentración de participaciones, no su calidad.",
+  works:"obras",country:"País",city:"Ciudad",type:"Sector",top_fields:"Principales líneas",
+  nodata:"No encontré los datos. Ejecuta el cuaderno de Colab y sube los archivos a docs/data/.",
+  noyear:"Estos datos no incluyen el año: vuelve a generarlos con el cuaderno actualizado para ver la evolución.",
+  ft_extract:"Fecha de extracción",ft_period:"Temporalidad del estudio",ft_source:"Fuente de los datos",ft_source_txt:"OpenAlex, consultada mediante su API",
+  ft_created:"Creado por Fátima Miranda Pestaña para el evento DatostadaMx «Ciencia de Datos y Machine Learning en la investigación: lo que ya es posible y lo que viene».",
+  types:{education:"Educación",company:"Empresa",government:"Gobierno",nonprofit:"Sin fines de lucro",healthcare:"Salud",facility:"Instalación científica",archive:"Archivo",other:"Otro"}},
+ en:{title:"Map of research projects with ML and Data Science",f_inst:"Institution",inst_ph:"Search institution…",inst_or:"or pick from the list",inst_pick:"Select institution…",inst_none:"No matches",clear:"Clear selection",
+  f_view:"Map view",v_circles:"Circles",v_heat:"Hotspots",v_both:"Both",heat_r:"Hotspot radius",
+  f_source:"Source",f_field:"Research line",f_type:"Institution sector",f_min:"Minimum works per institution",f_go:"Go to",go_world:"World",go_mx:"Mexico",go_mid:"Mérida",
+  f_sum:"Summary",s_inst:"institutions",s_works:"participations",s_country:"countries",s_top:"top country",all:"All research lines",
+  b_sector:"By sector",b_field:"By research line",others:"Others",
+  p_title:"Contributions by institution",p_top:"Top 10 institutions",p_open:"Institutions",p_rank:"Rank",p_share:"of total",p_peak:"Peak year",
+  d_fields:"By line",d_sources:"By source",d_years:"By year",add_filter:"Filter by this institution",
+  y_title:"Year",y_all:"All",y_play:"▶ Play",y_pause:"⏸ Pause",y_cum:"Cumulative",
+  m_title:"How to read this map and its limits",
+  m_body:"Each circle is an institution; its size is the number of publications mentioning data science or machine learning in the title or abstract, in the selected sources. A work with authors from several institutions counts for each one (hence “participations”). It measures publications, not projects, and keyword-based ML detection can miss or over-include. Institution type and location come from OpenAlex. Hotspots show where participations concentrate, not their quality.",
+  works:"works",country:"Country",city:"City",type:"Sector",top_fields:"Top research lines",
+  nodata:"I could not find the data. Run the Colab notebook and upload the files to docs/data/.",
+  noyear:"This data has no year: regenerate it with the updated notebook to see the evolution.",
+  ft_extract:"Extraction date",ft_period:"Study period",ft_source:"Data source",ft_source_txt:"OpenAlex, queried through its API",
+  ft_created:"Created by Fátima Miranda Pestaña for the DatostadaMx event “Data Science and Machine Learning in research: what is already possible and what comes next”.",
+  types:{education:"Education",company:"Company",government:"Government",nonprofit:"Nonprofit",healthcare:"Healthcare",facility:"Research facility",archive:"Archive",other:"Other"}}
+};
+const FIELDS_ES={"Agricultural and Biological Sciences":"Ciencias agrícolas y biológicas","Arts and Humanities":"Artes y humanidades","Biochemistry, Genetics and Molecular Biology":"Bioquímica, genética y biología molecular","Business, Management and Accounting":"Negocios, gestión y contabilidad","Chemical Engineering":"Ingeniería química","Chemistry":"Química","Computer Science":"Ciencias de la computación","Decision Sciences":"Ciencias de la decisión","Dentistry":"Odontología","Earth and Planetary Sciences":"Ciencias de la Tierra y planetarias","Economics, Econometrics and Finance":"Economía, econometría y finanzas","Energy":"Energía","Engineering":"Ingeniería","Environmental Science":"Ciencias ambientales","Health Professions":"Profesiones de la salud","Immunology and Microbiology":"Inmunología y microbiología","Materials Science":"Ciencia de materiales","Mathematics":"Matemáticas","Medicine":"Medicina","Neuroscience":"Neurociencia","Nursing":"Enfermería","Pharmacology, Toxicology and Pharmaceutics":"Farmacología, toxicología y farmacéutica","Physics and Astronomy":"Física y astronomía","Psychology":"Psicología","Social Sciences":"Ciencias sociales","Veterinary":"Veterinaria"};
+const TYPE_COLOR={education:"#7C68D8",company:"#E8833A",government:"#5CC8E8",nonprofit:"#3FB28B",healthcare:"#E4577A",facility:"#9AA0B5",archive:"#C9B458",other:"#6B7280"};
+const FIELD_PALETTE=["#7C68D8","#E8833A","#5CC8E8","#3FB28B","#E4577A","#C9B458","#8E6BBF","#2F7F9E","#B5651D"];
+const GRAY="#9AA0B5";
+
+// Si no existe data/meta.json, el pie de página usa estos valores. Cámbialos si hace falta.
+const RESPALDO={fecha_de_corte:"2026-11-13",periodo:"2020-2026"};
+let lang="es",DATA=[],META=null,INSTS=[],FIELD_COLOR={},map,layer,heat=null;
+const state={sources:new Set(),types:new Set(),field:"",min:1,inst:new Set(),mode:"circles",radius:25};
+const t=k=>I18N[lang][k]??k;
+const fieldName=f=>lang==="es"?(FIELDS_ES[f]||f):f;
+const typeLabel=k=>I18N[lang].types[k]||k;
+const $=id=>document.getElementById(id);
+
+/* ============ lógica pura (se prueba sin navegador) ============ */
+function parseCSV(text){
+  const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true;
+    else if(c===','){row.push(cur);cur=""}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cur);cur="";if(row.length>1||row[0]!=="")rows.push(row);row=[]}
+    else cur+=c}
+  if(cur!==""||row.length){row.push(cur);rows.push(row)}
+  const head=rows.shift().map(h=>h.trim());
+  return rows.map(r=>{const o={};head.forEach((h,i)=>o[h]=r[i]);return o});
+}
+const num=v=>(v===""||v==null)?NaN:+v;
+function aggregate(rows,f,opts={}){
+  const m=new Map();
+  for(const r of rows){
+    if(!f.sources.has(r.source_group)||!f.types.has(r.type))continue;
+    if(f.field&&r.field!==f.field)continue;
+    if(!opts.ignoreInst&&f.inst&&f.inst.size&&!f.inst.has(r.institution_id))continue;
+    const w=+r.works;if(!(w>0))continue;
+    let o=m.get(r.institution_id);
+    if(!o){o={id:r.institution_id,name:r.institution,type:r.type,country:r.country_code,city:r.city,lat:num(r.lat),lon:num(r.lon),works:0,fields:{},sources:{}};m.set(r.institution_id,o)}
+    o.works+=w;o.fields[r.field]=(o.fields[r.field]||0)+w;o.sources[r.source_group]=(o.sources[r.source_group]||0)+w;
+  }
+  return [...m.values()].filter(o=>isFinite(o.lat)&&isFinite(o.lon)).sort((a,b)=>b.works-a.works);
+}
+function breakdown(obj,topN){
+  const tot=Object.values(obj).reduce((a,b)=>a+b,0);
+  let e=Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({k,v,p:tot?100*v/tot:0}));
+  if(topN&&e.length>topN){const rest=e.slice(topN);e=e.slice(0,topN);e.push({k:"__others",v:rest.reduce((a,b)=>a+b.v,0),p:rest.reduce((a,b)=>a+b.p,0)})}
+  return e;
+}
+function radius(w){return Math.min(3+1.6*Math.sqrt(w),30)}
+const fmtPct=p=>(p>=10?p.toFixed(0):p.toFixed(1))+"%";
+const norm=s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function searchInst(list,q,n=8){const k=norm(q).trim();if(!k)return[];return list.filter(i=>norm(i.name).includes(k)).slice(0,n)}
+/* ================================================================ */
+
+function el(tag,props,...kids){const e=document.createElement(tag);if(props)for(const [k,v] of Object.entries(props)){if(k==="class")e.className=v;else if(k==="style")e.style.cssText=v;else if(k.startsWith("on"))e[k]=v;else e.setAttribute(k,v)}kids.flat().forEach(c=>e.append(c&&c.nodeType?c:document.createTextNode(c??"")));return e}
+const fmt=n=>n.toLocaleString(lang==="es"?"es-MX":"en-US");
+
+function currentFilter(){return{sources:state.sources,types:state.types,field:state.field,min:state.min,inst:state.inst}}
+function compute(){
+  const f=currentFilter();
+  const aggAll=aggregate(DATA,{...f,inst:null});
+  const total=aggAll.reduce((s,o)=>s+o.works,0);
+  const rank=new Map(aggAll.map((o,i)=>[o.id,i+1]));
+  let agg=state.inst.size?aggAll.filter(o=>state.inst.has(o.id)):aggAll;
+  agg=agg.filter(o=>o.works>=f.min);
+  return{f,aggAll,total,rank,agg};
+}
+
+function buildFilters(){
+  const srcs=[...new Set(DATA.map(r=>r.source_group))].sort();
+  const types=[...new Set(DATA.map(r=>r.type||"other"))].sort();
+  const fields=[...new Set(DATA.map(r=>r.field))].sort();
+  if(!state.sources.size)srcs.forEach(s=>state.sources.add(s));
+  if(!state.types.size)types.forEach(s=>state.types.add(s));
+  const fs=$("f-source");fs.innerHTML="";srcs.forEach(s=>fs.append(chk(s,state.sources,()=>s)));
+  const ft=$("f-type");ft.innerHTML="";types.forEach(s=>ft.append(chk(s,state.types,()=>typeLabel(s),TYPE_COLOR[s]||"#6B7280")));
+  const sel=$("f-field");sel.innerHTML="";
+  sel.append(el("option",{value:""},t("all")));
+  fields.forEach(f=>sel.append(el("option",{value:f},fieldName(f))));
+  sel.value=state.field;
+}
+function chk(value,set,label,color){
+  const i=el("input",{type:"checkbox"});i.checked=set.has(value);i.onchange=()=>{i.checked?set.add(value):set.delete(value);update()};
+  return el("label",{class:"chk"},i,color?el("span",{class:"dot",style:`background:${color}`}):"",el("span",null,label()));
+}
+
+/* ---- barras con porcentajes ---- */
+function renderBreakdown(barId,legId,entries,colorOf,labelOf){
+  const bar=$(barId),leg=$(legId);bar.innerHTML="";leg.innerHTML="";
+  entries.forEach(e=>{
+    const c=colorOf(e.k),lb=e.k==="__others"?t("others"):labelOf(e.k);
+    bar.append(el("span",{style:`width:${e.p}%;background:${c}`,title:`${lb}: ${fmt(e.v)} (${fmtPct(e.p)})`}));
+    leg.append(el("li",null,el("span",{class:"dot",style:`background:${c}`}),el("span",null,lb),el("span",{class:"n"},fmt(e.v)),el("span",{class:"p"},fmtPct(e.p))));
+  });
+}
+function renderSummary(c){
+  const {agg}=c;
+  const total=agg.reduce((s,o)=>s+o.works,0);
+  const byC={};agg.forEach(o=>byC[o.country]=(byC[o.country]||0)+o.works);
+  const top=Object.entries(byC).sort((a,b)=>b[1]-a[1])[0];
+  $("s-inst").textContent=fmt(agg.length);$("s-works").textContent=fmt(total);
+  $("s-country").textContent=Object.keys(byC).length;$("s-top").textContent=top?top[0]:"–";
+  const bySec={},byFld={};
+  agg.forEach(o=>{bySec[o.type]=(bySec[o.type]||0)+o.works;for(const [f,w] of Object.entries(o.fields))byFld[f]=(byFld[f]||0)+w});
+  renderBreakdown("bar-sector","leg-sector",breakdown(bySec),k=>TYPE_COLOR[k]||"#6B7280",typeLabel);
+  renderBreakdown("bar-field","leg-field",breakdown(byFld,8),k=>k==="__others"?GRAY:(FIELD_COLOR[k]||GRAY),fieldName);
+}
+
+/* ---- panel de contribuciones por institución ---- */
+function toggleInst(id,on){
+  if(on===undefined)on=!state.inst.has(id);
+  on?state.inst.add(id):state.inst.delete(id);update();
+}
+function renderPanel(c){
+  const top=$("p-top");top.innerHTML="";
+  const list=c.aggAll.filter(o=>o.works>=state.min).slice(0,10);
+  const mx=list.length?list[0].works:1;
+  list.forEach(o=>{
+    const p=c.total?100*o.works/c.total:0;
+    top.append(el("div",{class:"toprow"+(state.inst.has(o.id)?" sel":""),title:o.name,onclick:()=>{toggleInst(o.id);if(state.inst.has(o.id))flyTo(o)}},
+      el("i",{class:"fill",style:`width:${100*o.works/mx}%`}),el("span",null,String(c.rank.get(o.id))),el("span",{class:"nm"},o.name),el("span",{class:"v"},`${fmt(o.works)} · ${fmtPct(p)}`)));
+  });
+  const sel=$("p-sel");sel.innerHTML="";
+  if(!state.inst.size)return;
+  c.agg.forEach(o=>{
+    const p=c.total?100*o.works/c.total:0;
+    const card=el("div",{class:"card"},
+      el("h4",null,o.name),el("div",{class:"meta"},`${typeLabel(o.type)} · ${o.country}${o.city?" · "+o.city:""}`),
+      el("div",{class:"big"},el("div",null,el("b",null,fmt(o.works)),t("works")),el("div",null,el("b",null,fmtPct(p)),t("p_share")),el("div",null,el("b",null,"#"+c.rank.get(o.id)),t("p_rank"))));
+    const fl=breakdown(o.fields,4);
+    card.append(el("div",{class:"sub",style:"margin-top:4px"},t("d_fields")),miniList(fl,k=>k==="__others"?t("others"):fieldName(k)));
+    card.append(el("div",{class:"sub"},t("d_sources")),miniList(breakdown(o.sources),k=>k));
+    card.append(el("button",{style:"margin-top:6px;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:.75rem",onclick:()=>toggleInst(o.id,false)},"× "+t("clear")));
+    sel.append(card);
+  });
+}
+function miniList(entries,labelOf){
+  const ul=el("ul",{class:"leg"});
+  entries.forEach(e=>ul.append(el("li",null,el("span",{class:"dot",style:"background:var(--violet);opacity:.5"}),el("span",null,labelOf(e.k)),el("span",{class:"n"},fmt(e.v)),el("span",{class:"p"},fmtPct(e.p)))));
+  return ul;
+}
+function flyTo(o){map.flyTo([o.lat,o.lon],Math.max(map.getZoom(),5),{duration:.8})}
+
+/* ---- búsqueda de institución ---- */
+let _instSelKey="";
+function buildInstSelect(){
+  const sel=$("inst-sel");if(!sel)return;
+  const key=lang+"|"+[...state.inst].sort().join(",")+"|"+INSTS.length;
+  if(key===_instSelKey)return;_instSelKey=key;
+  sel.innerHTML="";
+  sel.append(el("option",{value:""},t("inst_pick")));
+  [...INSTS].filter(i=>!state.inst.has(i.id))
+    .sort((a,b)=>(a.name||a.id).localeCompare(b.name||b.id,lang==="es"?"es":"en"))
+    .forEach(i=>sel.append(el("option",{value:i.id},`${i.name||i.id} (${i.country||"–"})`)));
+  sel.value="";
+}
+function renderChips(){
+  const box=$("chips");box.innerHTML="";
+  state.inst.forEach(id=>{const i=INSTS.find(x=>x.id===id);if(!i)return;
+    box.append(el("span",{class:"chip"},i.name,el("button",{"aria-label":t("clear"),onclick:()=>toggleInst(id,false)},"×")))});
+  buildInstSelect();
+}
+function wireSearch(){
+  const q=$("inst-q"),ul=$("inst-list");let act=-1,cur=[];
+  const close=()=>{ul.hidden=true;ul.innerHTML="";act=-1};
+  const pick=i=>{state.inst.add(i.id);q.value="";close();update();flyTo(i)};
+  q.oninput=()=>{
+    cur=searchInst(INSTS,q.value);ul.innerHTML="";act=-1;
+    if(!q.value.trim()){ul.hidden=true;return}
+    ul.hidden=false;
+    if(!cur.length){ul.append(el("li",null,t("inst_none")));return}
+    cur.forEach(i=>ul.append(el("li",{onmousedown:e=>{e.preventDefault();pick(i)}},i.name,el("small",null,` · ${i.country}`))));
+  };
+  q.onkeydown=e=>{
+    const items=[...ul.querySelectorAll("li")];
+    if(e.key==="ArrowDown"&&cur.length){act=(act+1)%cur.length;items.forEach((x,k)=>x.classList.toggle("act",k===act));e.preventDefault()}
+    else if(e.key==="ArrowUp"&&cur.length){act=(act-1+cur.length)%cur.length;items.forEach((x,k)=>x.classList.toggle("act",k===act));e.preventDefault()}
+    else if(e.key==="Enter"&&cur.length){pick(cur[Math.max(act,0)]);e.preventDefault()}
+    else if(e.key==="Escape")close();
+  };
+  q.onblur=()=>setTimeout(close,120);
+}
+
+/* ---- mapa ---- */
+function popup(o,c){
+  const p=c.total?100*o.works/c.total:0;
+  const d=el("div",null,el("b",null,o.name),
+    el("div",null,`${t("type")}: ${typeLabel(o.type)}`),el("div",null,`${t("country")}: ${o.country}${o.city?" · "+o.city:""}`),
+    el("div",null,`${t("works")}: ${fmt(o.works)} · ${fmtPct(p)} ${t("p_share")} · ${t("p_rank")} #${c.rank.get(o.id)}`),
+    el("div",{style:"margin-top:4px"},t("top_fields")+": "+breakdown(o.fields,3).filter(e=>e.k!=="__others").map(e=>fieldName(e.k)+" ("+fmtPct(e.p)+")").join("; ")),
+    el("button",{onclick:()=>{toggleInst(o.id,true);map.closePopup()}},t("add_filter")));
+  return d;
+}
+function renderMap(c){
+  layer.clearLayers();
+  const showC=state.mode!=="heat",showH=state.mode!=="circles";
+  if(showC)c.agg.forEach(o=>{
+    L.circleMarker([o.lat,o.lon],{radius:radius(o.works),color:TYPE_COLOR[o.type]||"#6B7280",weight:1,fillColor:TYPE_COLOR[o.type]||"#6B7280",fillOpacity:state.mode==="both"?.35:.55})
+     .bindPopup(()=>popup(o,c)).bindTooltip(`${o.name} · ${fmt(o.works)}`).addTo(layer);
+  });
+  if(typeof L.heatLayer==="function"){
+    if(showH){
+      const mx=c.agg.length?c.agg[0].works:1;
+      const pts=c.agg.map(o=>[o.lat,o.lon,Math.pow(o.works/mx,.5)]);
+      const opts={radius:state.radius,blur:Math.round(state.radius*.7),maxZoom:8,max:1,gradient:{.2:"#5CC8E8",.5:"#7C68D8",.8:"#E8833A",1:"#E4577A"}};
+      if(!heat)heat=L.heatLayer(pts,opts);
+      if(!map.hasLayer(heat))heat.addTo(map);
+      heat.setOptions(opts);heat.setLatLngs(pts);
+    }else if(heat&&map.hasLayer(heat))map.removeLayer(heat);
+  }
+}
+function update(){
+  const c=compute();
+  renderMap(c);renderSummary(c);renderPanel(c);renderChips();
+}
+
+/* ---- pie de página ---- */
+function fmtDate(iso){
+  if(!iso)return"–";
+  const d=new Date(iso+"T12:00:00");if(isNaN(d))return iso;
+  return new Intl.DateTimeFormat(lang==="es"?"es-MX":"en-US",{day:"numeric",month:"long",year:"numeric"}).format(d);
+}
+function renderFooter(){
+  const M=META||RESPALDO;
+  const period=M.periodo||RESPALDO.periodo;
+  const srcs=META&&META.fuentes?Object.keys(META.fuentes).join(", "):[...state.sources].join(", ");
+  const f=$("footer");f.innerHTML="";
+  f.append(el("b",null,t("ft_extract")+": "),fmtDate(M.fecha_de_corte||RESPALDO.fecha_de_corte)," · ",
+    el("b",null,t("ft_period")+": "),period," · ",
+    el("b",null,t("ft_source")+": "),t("ft_source_txt")+(srcs?` (${srcs})`:"")+". ",t("ft_created"));
+}
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(e=>{e.textContent=t(e.dataset.i18n)});
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>{e.placeholder=t(e.dataset.i18nPh)});
+  document.title=t("title");
+  $("l-es").setAttribute("aria-pressed",lang==="es");$("l-en").setAttribute("aria-pressed",lang==="en");
+  if(META)$("meta-line").textContent=(META.criterio_ml?`Criterio: ${META.criterio_ml}`:"");
+  renderFooter();
+  if(DATA.length){buildFilters();update()}
+}
+function showMsg(txt){const m=$("msg");m.textContent=txt;m.style.display="block"}
+
+/* ---- carga de datos: obras.csv + instituciones.csv (nuevo) o instituciones.csv plano (anterior) ---- */
+async function loadData(){
+  const rI=await fetch("data/instituciones.csv");if(!rI.ok)throw new Error("instituciones.csv "+rI.status);
+  const inst=parseCSV(await rI.text());
+  let rows;
+  const rO=await fetch("data/obras.csv").catch(()=>null);
+  if(rO&&rO.ok&&inst.length&&!("works" in inst[0])){
+    const cat=new Map(inst.map(i=>[i.institution_id,i]));
+    rows=parseCSV(await rO.text()).map(r=>{const i=cat.get(r.institution_id)||{};
+      return{institution_id:r.institution_id,institution:i.institution,type:i.type||"other",country_code:i.country_code,city:i.city,lat:i.lat,lon:i.lon,source_group:r.source_group,field:r.field,year:r.year?+r.year:null,works:r.works}});
+  }else{
+    rows=inst.map(r=>({...r,type:r.type||"other",year:r.year?+r.year:null}));
+  }
+  return rows;
+}
+async function init(){
+  map=L.map("map",{preferCanvas:true,worldCopyJump:true}).setView([20,0],2);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',maxZoom:16}).addTo(map);
+  layer=L.layerGroup().addTo(map);
+  $("l-es").onclick=()=>{lang="es";applyLang()};$("l-en").onclick=()=>{lang="en";applyLang()};
+  $("f-field").onchange=e=>{state.field=e.target.value;update()};
+  $("f-min").oninput=e=>{state.min=+e.target.value;$("f-min-v").textContent=state.min;update()};
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const g={world:[[20,0],2],mx:[[23.5,-102],5],mid:[[20.97,-89.62],9]}[b.dataset.go];map.setView(g[0],g[1])});
+  document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;
+    document.querySelectorAll("#modes button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    $("heat-ctl").style.display=state.mode==="circles"?"none":"block";update()});
+  $("heat-r").oninput=e=>{state.radius=+e.target.value;update()};
+  $("pclose").onclick=()=>{$("panel").classList.add("closed")};
+  $("ptoggle").onclick=()=>{$("panel").classList.remove("closed")};
+  if(window.innerWidth<1000)$("panel").classList.add("closed");
+  $("inst-sel").onchange=e=>{const id=e.target.value;if(!id)return;const i=INSTS.find(x=>x.id===id);state.inst.add(id);update();if(i)flyTo(i)};
+  wireSearch();
+  try{
+    DATA=await loadData();
+    try{const m=await fetch("data/meta.json");if(m.ok)META=await m.json()}catch(e){}
+    const seen=new Map();
+    DATA.forEach(r=>{if(!seen.has(r.institution_id)){const lat=num(r.lat),lon=num(r.lon);if(isFinite(lat)&&isFinite(lon))seen.set(r.institution_id,{id:r.institution_id,name:r.institution,country:r.country_code,city:r.city,lat,lon,w:0})}});
+    DATA.forEach(r=>{const i=seen.get(r.institution_id);if(i)i.w+=(+r.works||0)});
+    INSTS=[...seen.values()].sort((a,b)=>b.w-a.w);
+    const gt={};DATA.forEach(r=>gt[r.field]=(gt[r.field]||0)+(+r.works||0));
+    Object.entries(gt).sort((a,b)=>b[1]-a[1]).forEach(([f],i)=>FIELD_COLOR[f]=i<FIELD_PALETTE.length?FIELD_PALETTE[i]:GRAY);
+    applyLang();
+  }catch(e){applyLang();showMsg(t("nodata"))}
+}
+if(typeof document!=="undefined"&&typeof L!=="undefined")init();
+if(typeof module!=="undefined")module.exports={parseCSV,aggregate,breakdown,radius,searchInst,fmtPct};
+</script>
+</body>
+</html>
