@@ -15,6 +15,10 @@ const InteractiveMap = lazy(() => import('./components/InteractiveMap.jsx'))
 /* ============================================================================
    ENLACES VERIFICADOS — no cambian con el idioma
    ============================================================================ */
+// 1. PRIMERO declaramos BASE
+const BASE = import.meta.env.BASE_URL
+
+// 2. LUEGO ya podemos usar BASE adentro de los enlaces
 const LINKS = {
   linkedin: 'https://www.linkedin.com/in/fatimamirandaa/',
   github: 'https://github.com/FatimaMirandap',
@@ -24,12 +28,12 @@ const LINKS = {
   aws: 'https://www.credly.com/badges/129d6ddf-5932-48d9-a36b-87b84ae382b3/linked_in_profile',
   itep: 'https://www.iteptest.com/reports/certificate.php?c=4r5mzYh',
   toefl: 'https://drive.google.com/file/d/16U2aKLvFevf8p8dAGd2NJYpzW_kF96mM/view?usp=sharing',
+  datostadamx: `${BASE}Proyectos/ML-datostadamx2026/index_project1.html`,
 }
 
-// Mapea el id de "enlace" de cada experiencia y logro a su URL real
 const ENLACE_URL = { giltia: LINKS.giltia, peekenos: LINKS.peekenos, 'centrogeo-ds': LINKS.publicacion }
 
-const BASE = import.meta.env.BASE_URL
+// CV_FILES ya usa BASE correctamente
 const CV_FILES = {
   es: `${BASE}cv/CV_FATIMAMIRANDA.pdf`,
   en: `${BASE}cv/Resume_FatimaMiranda.pdf`,
@@ -89,12 +93,14 @@ function LanguageToggle() {
 function Nav() {
   const { t } = useLanguage()
   const NAV_LINKS = [
-    { href: '#inicio', label: t.nav.inicio },
-    { href: '#stack', label: t.nav.stack },
-    { href: '#experiencias', label: t.nav.experiencias },
-    { href: '#laboratorio', label: t.nav.laboratorio },
-    { href: '#logros', label: t.nav.logros },
-    { href: '#cv', label: t.nav.cv },
+      { href: '#inicio', label: t.nav.inicio },
+      { href: '#stack', label: t.nav.stack },
+      { href: '#experiencias', label: t.nav.experiencias },
+      { href: '#laboratorio', label: t.nav.laboratorio },
+      { href: '#logros', label: t.nav.logros },
+      { href: '#cv', label: t.nav.cv },
+      // 👇 NUEVO ENLACE AL MAPA
+      { href: '#visor-mapa', label: t.nav.mapa || 'MAPA' },
   ]
 
   return (
@@ -429,6 +435,64 @@ function AchievementsSection() {
 }
 
 /* ============================================================================
+   VISOR DE MAPA INTERACTIVO (Vista expandida)
+   ============================================================================ */
+function MapViewerSection() {
+  const { t } = useLanguage()
+  // Utiliza el enlace que configuraste previamente en LINKS
+  const mapUrl = LINKS.datostadamx 
+
+  return (
+    <section id="visor-mapa" className="py-20 md:py-28">
+      {/* Contenedor más ancho: w-[95%] y max-w-7xl en lugar de max-w-5xl */}
+      <div className="mx-auto w-[95%] max-w-7xl px-4 md:px-8">
+        <Reveal>
+          {/* Ajusta estas variables con tu archivo de traducciones */}
+          <SectionHeading 
+            eyebrow="Laboratorio Geoespacial" 
+            title="Mapa de Publicaciones ML" 
+            description="Explora de manera interactiva la distribución geográfica de investigaciones en Machine Learning y Ciencia de Datos." 
+          />
+        </Reveal>
+        
+        <Reveal delay={0.1}>
+          <div className="mt-8 overflow-hidden rounded-2xl border border-purple-950/50 bg-[#0b0816]/90 shadow-2xl shadow-purple-900/20">
+            
+            {/* Barra superior estilo ventana de navegador */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-purple-950/50 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <span className="flex h-3 w-3 rounded-full bg-red-500/40"></span>
+                <span className="flex h-3 w-3 rounded-full bg-yellow-500/40"></span>
+                <span className="flex h-3 w-3 rounded-full bg-green-500/40"></span>
+                <span className="ml-3 font-mono text-xs text-purple-300/60">index_project1.html</span>
+              </div>
+              <div className="flex gap-2">
+                <a 
+                  href={mapUrl} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="rounded-full border border-purple-900/60 px-4 py-1.5 font-mono text-xs text-purple-200 transition-colors hover:border-fuchsia-500 hover:text-fuchsia-300"
+                >
+                  Abrir en pestaña nueva ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Iframe del mapa: h-[70vh] en móviles, h-[90vh] en escritorio */}
+            <iframe 
+              src={mapUrl} 
+              title="Mapa Interactivo" 
+              className="h-[70vh] w-full bg-[#15183D] md:h-[90vh]" 
+              loading="lazy"
+            />
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+/* ============================================================================
    6. VISOR DE CV
    ============================================================================ */
 function ResumeSection() {
@@ -492,14 +556,24 @@ function AppContent() {
         <main>
           <Hero />
           <TornDivider color="#120b22" variant={0} />
+          
           <StackSection />
           <TornDivider color="#170f29" variant={1} flip />
+          
           <ExperiencesSection />
           <TornDivider color="#120b22" variant={0} flip />
+          
           <LabShowcase />
           <TornDivider color="#170f29" variant={1} />
+          
+          {/* 👇 NUEVA SECCIÓN DEL MAPA AQUÍ 👇 */}
+          <MapViewerSection />
+          <TornDivider color="#120b22" variant={0} />
+          {/* 👆 ============================== 👆 */}
+
           <AchievementsSection />
-          <TornDivider color="#120b22" variant={0} flip />
+          <TornDivider color="#170f29" variant={1} flip />
+          
           <ResumeSection />
         </main>
         <TornDivider color="#0a0712" variant={1} />
